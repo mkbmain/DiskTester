@@ -8,3 +8,6 @@ I could not belive how cheap they where and assumed they where drives of a lot s
 
 
 It allows you to pick a drive and then it will determine its size write a file that fills the empty space then read back that file and ensure its all there 
+
+
+please note make sure the usb is ntfs or exfat if bigger than a few GB as fat does not support single files bigger than a few GBs
