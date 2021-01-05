@@ -67,10 +67,10 @@ namespace UsbKeyTester
 
         private void BuildFile(string filePath, long sizeOfUsbInBytes)
         {
-            const int LenghtOfBytes = 10000000;
+            const int lenghtOfBytes = 10000000;
             // as we know in asci a letter is a byte lets make a list 
-            var chars = new List<char>(LenghtOfBytes);
-            for (int i = 0; i < LenghtOfBytes; i++)
+            var chars = new List<char>(lenghtOfBytes);
+            for (int i = 0; i < lenghtOfBytes; i++)
             {
                 chars.Add(_lettersAndNumbers[_rand.Next(1, _lettersAndNumbers.Length - 1)]);
             }
@@ -80,15 +80,15 @@ namespace UsbKeyTester
             stopWatch.Start();
             using (var sw = new StreamWriter(filePath))
             {
-                for (long i = 0; i < sizeOfUsbInBytes - (LenghtOfBytes + 1); i += LenghtOfBytes + 1)
+                for (long i = 0; i < sizeOfUsbInBytes - (lenghtOfBytes + 1); i += lenghtOfBytes + 1)
                 {
                     sw.WriteLine(chars.ToArray());
                     char first = chars[0];
                     chars = chars.Skip(1).ToList();
                     chars.Add(first);
                     _linesGenerated++;
-                    CreateFileProgressBar.Value = (int) (i / LenghtOfBytes);
-                    CreateFileProgressBar.Maximum = (int) (sizeOfUsbInBytes / LenghtOfBytes);
+                    CreateFileProgressBar.Value = (int) (i / lenghtOfBytes);
+                    CreateFileProgressBar.Maximum = (int) (sizeOfUsbInBytes / lenghtOfBytes);
                 }
             }
 
