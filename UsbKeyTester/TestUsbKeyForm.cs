@@ -10,36 +10,18 @@ namespace UsbKeyTester
 {
     public partial class TestUsbKeyForm : Form
     {
-        private readonly BackgroundWorker _backgroundWorker = new BackgroundWorker();
-        private static Random _rand = new Random(Guid.NewGuid().GetHashCode());
-        private char[] lettersAndNumbers = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567890".ToCharArray();
-        private char[] originalChars;
-        private int linesGenerated = 0;
+        private static readonly Random _rand = new Random(Guid.NewGuid().GetHashCode());
+        private readonly char[] _lettersAndNumbers = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".ToCharArray();
+        private char[] _originalChars;
+        private int _linesGenerated = 0;
+
         public TestUsbKeyForm()
         {
             InitializeComponent();
-            _backgroundWorker.DoWork += (sender, args) =>
-            {
-                RunBtn.Enabled = false;
-                var fullPath = ((DriveRunDetails) args.Argument).FullPath;
-                var availableFreeSpace = ((DriveRunDetails) args.Argument).EmptyBytes;
-                BuildFile(fullPath, availableFreeSpace);
-                CheckFile(fullPath);
-                CheckFileProgressBar.Value = 0;
-                CheckFileProgressBar.Maximum = 1;
-                CreateFileProgressBar.Maximum = 1;
-                CreateFileProgressBar.Value = 0;
-                File.Delete(fullPath);
-            };
-
-            _backgroundWorker.RunWorkerCompleted += (sender, args) =>
-            {
-                RunBtn.Enabled = true;
-            };
 
             this.FormClosing += (sender, args) =>
             {
-                if (_backgroundWorker.WorkerSupportsCancellation == true)
+                if (_backgroundWorker != null && _backgroundWorker.IsBusy && _backgroundWorker.WorkerSupportsCancellation == true)
                 {
                     // Cancel the asynchronous operation.
                     _backgroundWorker.CancelAsync();
@@ -57,12 +39,29 @@ namespace UsbKeyTester
             DriveDropDownBox.SelectedIndex = 0;
         }
 
+        private BackgroundWorker _backgroundWorker;
+
         private void RunBtn_Click(object sender, EventArgs e)
         {
             var drive = DriveInfo.GetDrives().FirstOrDefault(f => f.Name == DriveDropDownBox.SelectedItem.ToString());
             var fileName = $"{Guid.NewGuid():N}.img";
             var fullPath = $"{drive}{fileName}";
-            _backgroundWorker.RunWorkerAsync(new DriveRunDetails {FullPath = fullPath, EmptyBytes = drive.AvailableFreeSpace});
+            var details = new DriveRunDetails {EmptyBytes = drive.AvailableFreeSpace, FullPath = fullPath};
+            _backgroundWorker = RunInBackground.Run(details, DoWork, ((o, args) => RunBtn.Enabled = true), null);
+        }
+
+        private void DoWork(object o, DoWorkEventArgs args)
+        {
+            RunBtn.Enabled = false;
+            var fullPath = ((DriveRunDetails) args.Argument).FullPath;
+            var availableFreeSpace = ((DriveRunDetails) args.Argument).EmptyBytes;
+            BuildFile(fullPath, availableFreeSpace);
+            CheckFile(fullPath);
+            CheckFileProgressBar.Value = 0;
+            CheckFileProgressBar.Maximum = 1;
+            CreateFileProgressBar.Maximum = 1;
+            CreateFileProgressBar.Value = 0;
+            File.Delete(fullPath);
         }
 
         private class DriveRunDetails
@@ -78,21 +77,21 @@ namespace UsbKeyTester
             var chars = new List<char>(LenghtOfBytes);
             for (int i = 0; i < LenghtOfBytes; i++)
             {
-                chars.Add(lettersAndNumbers[_rand.Next(1, lettersAndNumbers.Length - 1)]);
+                chars.Add(_lettersAndNumbers[_rand.Next(1, _lettersAndNumbers.Length - 1)]);
             }
 
-            originalChars = chars.ToArray();
+            _originalChars = chars.ToArray();
             var stopWatch = new Stopwatch();
             stopWatch.Start();
             using (var sw = new StreamWriter(filePath))
             {
-                for (long i = 0; i < sizeOfUsbInBytes -(LenghtOfBytes+1); i += LenghtOfBytes + 1)
+                for (long i = 0; i < sizeOfUsbInBytes - (LenghtOfBytes + 1); i += LenghtOfBytes + 1)
                 {
                     sw.WriteLine(chars.ToArray());
                     char first = chars[0];
                     chars = chars.Skip(1).ToList();
                     chars.Add(first);
-                    linesGenerated++;
+                    _linesGenerated++;
                     CreateFileProgressBar.Value = (int) (i / LenghtOfBytes);
                     CreateFileProgressBar.Maximum = (int) (sizeOfUsbInBytes / LenghtOfBytes);
                 }
@@ -105,7 +104,7 @@ namespace UsbKeyTester
         private void CheckFile(string filePath)
         {
             var lines = 0;
-            var listChars = originalChars.ToList();
+            var listChars = _originalChars.ToList();
             using (var fs2 = new StreamReader(filePath))
             {
                 string fileOneLine = null;
@@ -122,12 +121,12 @@ namespace UsbKeyTester
                     listChars.Add(first);
                     lines++;
 
-                    CheckFileProgressBar.Maximum = linesGenerated;
+                    CheckFileProgressBar.Maximum = _linesGenerated;
                     CheckFileProgressBar.Value = lines;
                 }
 
 
-                if (linesGenerated != lines)
+                if (_linesGenerated != lines)
                 {
                     MessageBox.Show("miss match in files");
                     return;

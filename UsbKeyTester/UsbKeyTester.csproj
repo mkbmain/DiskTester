@@ -46,6 +46,7 @@
         <Reference Include="System.Xml" />
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="RunInBackground.cs" />
         <Compile Include="TestUsbKeyForm.cs">
             <SubType>Form</SubType>
         </Compile>
