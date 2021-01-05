@@ -14,6 +14,7 @@ namespace UsbKeyTester
         private readonly char[] _lettersAndNumbers = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".ToCharArray();
         private char[] _originalChars;
         private int _linesGenerated = 0;
+        private BackgroundWorker _backgroundWorker;
 
         public TestUsbKeyForm()
         {
@@ -27,10 +28,6 @@ namespace UsbKeyTester
                     _backgroundWorker.CancelAsync();
                 }
             };
-        }
-
-        private void TestUsbKeyForm_Load(object sender, EventArgs e)
-        {
             foreach (var ite in DriveInfo.GetDrives().Select(f => f.Name))
             {
                 this.DriveDropDownBox.Items.Add(ite);
@@ -38,8 +35,6 @@ namespace UsbKeyTester
 
             DriveDropDownBox.SelectedIndex = 0;
         }
-
-        private BackgroundWorker _backgroundWorker;
 
         private void RunBtn_Click(object sender, EventArgs e)
         {
@@ -125,14 +120,7 @@ namespace UsbKeyTester
                     CheckFileProgressBar.Value = lines;
                 }
 
-
-                if (_linesGenerated != lines)
-                {
-                    MessageBox.Show("miss match in files");
-                    return;
-                }
-
-                MessageBox.Show("Done");
+                MessageBox.Show(_linesGenerated != lines ? "miss match in files" : "Done");
             }
         }
     }

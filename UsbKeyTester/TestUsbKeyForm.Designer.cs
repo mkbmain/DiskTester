@@ -110,7 +110,6 @@
             this.MaximizeBox = false;
             this.Name = "TestUsbKeyForm";
             this.Text = "Test Usb Key Form";
-            this.Load += new System.EventHandler(this.TestUsbKeyForm_Load);
             this.ResumeLayout(false);
         }
 
