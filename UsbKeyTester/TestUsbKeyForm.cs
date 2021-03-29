@@ -120,7 +120,7 @@ namespace UsbKeyTester
                     CheckFileProgressBar.Value = lines;
                 }
 
-                MessageBox.Show(_linesGenerated != lines ? "miss match in files" : "Done");
+                MessageBox.Show(_linesGenerated != lines ? "miss match in files" : "Done", @"Test Usb Key");
             }
         }
     }
