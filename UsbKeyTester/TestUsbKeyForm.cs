@@ -40,7 +40,7 @@ namespace UsbKeyTester
         {
             var drive = DriveInfo.GetDrives().FirstOrDefault(f => f.Name == DriveDropDownBox.SelectedItem.ToString());
             var fileName = $"{Guid.NewGuid():N}.img";
-            var fullPath = $"{drive}{fileName}";
+            var fullPath = System.IO.Path.Combine(drive.RootDirectory.FullName,fileName);
             var details = new DriveRunDetails {EmptyBytes = drive.AvailableFreeSpace, FullPath = fullPath};
             _backgroundWorker = RunInBackground.Run(details, DoWork, ((o, args) => RunBtn.Enabled = true), null);
         }
